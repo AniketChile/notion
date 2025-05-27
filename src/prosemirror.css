@@ -1,0 +1,6 @@
+.ProseMirror {
+    white-space: pre-wrap;
+    min-height: 100%;
+    outline: none;
+    padding: 1rem;
+  }
