@@ -12,8 +12,8 @@ const DocumentItem = ({ document, isActive, onSelect }) => {
 
   return (
     <div
-      className={`p-3 cursor-pointer flex justify-between items-center ${
-        isActive ? "bg-blue-100" : "hover:bg-gray-200"
+      className={`p-3 cursor-pointer flex justify-between items-center text-white transition ${
+        isActive ? "bg-gray-700" : "hover:bg-gray-800"
       }`}
       onClick={() => onSelect(document.id)}
     >
@@ -21,7 +21,7 @@ const DocumentItem = ({ document, isActive, onSelect }) => {
       {isActive && (
         <button
           onClick={handleDelete}
-          className="text-red-500 hover:text-red-700 ml-2"
+          className="text-red-400 hover:text-red-600 ml-2"
         >
           ×
         </button>

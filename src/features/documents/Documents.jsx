@@ -6,7 +6,7 @@ const Documents = () => {
   const activeDocument = useSelector(selectActiveDocument);
 
   return (
-    <div className="flex-1 p-4">
+    <div className="flex-1 p-4 text-white">
       {activeDocument ? (
         <div>
           <h1 className="text-2xl font-bold mb-4">{activeDocument.title}</h1>

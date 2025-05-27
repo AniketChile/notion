@@ -22,19 +22,24 @@ const Toolbar = () => {
   };
 
   return (
-    <div className="border-b border-gray-200 p-2 flex justify-between items-center">
+    <div className="border-b border-gray-800 p-2 flex justify-between items-center bg-gray-800 text-white">
       <input
         type="text"
         value={activeDocument?.title || ""}
         onChange={handleTitleChange}
         placeholder="Untitled Document"
-        className="text-xl font-semibold px-2 py-1 border-none outline-none bg-transparent"
+        className="text-xl font-semibold px-2 py-1 border-none outline-none bg-transparent w-1/2"
       />
-      <div className="text-sm text-gray-500">
-        {isSaving ? "Saving..." : lastSaved ? `Last saved: ${new Date(lastSaved).toLocaleTimeString()}` : "Not saved yet"}
+      <div className="text-sm text-gray-400">
+        {isSaving
+          ? "Saving..."
+          : lastSaved
+          ? `Last saved: ${new Date(lastSaved).toLocaleTimeString()}`
+          : "Not saved yet"}
       </div>
     </div>
   );
 };
 
 export default Toolbar;
+

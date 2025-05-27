@@ -47,8 +47,14 @@ const Editor = () => {
     }, 500);
   };
 
+  useEffect(() => {
+    return () => {
+      handleSave(); // Save on unmount
+    };
+  }, []);
+
   return (
-    <div className="editor-container h-full">
+    <div className="editor-container h-full dark:bg-gray-900 dark:text-white">
       <textarea
         value={localContent}
         onChange={handleContentChange}
@@ -56,7 +62,7 @@ const Editor = () => {
         placeholder={editorOptions.placeholder}
         spellCheck={editorOptions.spellCheck}
         autoCapitalize={editorOptions.autoCapitalize ? "on" : "off"}
-        className="w-full h-full p-4 outline-none resize-none"
+        className="w-full h-full p-4 bg-transparent text-white placeholder-gray-400 outline-none resize-none"
       />
     </div>
   );

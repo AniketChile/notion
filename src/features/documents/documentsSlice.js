@@ -16,7 +16,7 @@ const documentsSlice = createSlice({
   name: 'documents',
   initialState,
   reducers: {
-    addDocument: (state, action) => {
+    addDocument: (state) => {
       const newDoc = {
         id: nanoid(),
         title: 'Untitled Document',
@@ -28,14 +28,14 @@ const documentsSlice = createSlice({
     },
     updateDocument: (state, action) => {
       const { id, title, content } = action.payload;
-      const doc = state.documents.find(doc => doc.id === id);
+      const doc = state.documents.find((doc) => doc.id === id);
       if (doc) {
         if (title !== undefined) doc.title = title;
         if (content !== undefined) doc.content = content;
       }
     },
     deleteDocument: (state, action) => {
-      state.documents = state.documents.filter(doc => doc.id !== action.payload.id);
+      state.documents = state.documents.filter((doc) => doc.id !== action.payload.id);
       if (state.activeDocumentId === action.payload.id) {
         state.activeDocumentId = state.documents[0]?.id || null;
       }
@@ -47,15 +47,23 @@ const documentsSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase('LOAD_STATE', (state, action) => {
       if (action.payload?.documents) {
-        return action.payload.documents;
+        return {
+          ...state,
+          ...action.payload.documents,
+        };
       }
     });
   },
 });
 
-export const selectActiveDocument = (state) => 
-  state.documents.documents.find(doc => doc.id === state.documents.activeDocumentId);
-  
-export const { addDocument, updateDocument, deleteDocument, setActiveDocument } = documentsSlice.actions;
+export const selectActiveDocument = (state) =>
+  state.documents.documents.find((doc) => doc.id === state.documents.activeDocumentId);
+
+export const {
+  addDocument,
+  updateDocument,
+  deleteDocument,
+  setActiveDocument,
+} = documentsSlice.actions;
 
 export default documentsSlice.reducer;

@@ -17,11 +17,11 @@ const Sidebar = () => {
   };
 
   return (
-    <div className="w-64 h-screen bg-gray-100 border-r border-gray-200 flex flex-col">
-      <div className="p-4 border-b border-gray-200">
+    <div className="w-64 h-screen bg-gray-900 border-r border-gray-800 flex flex-col">
+      <div className="p-4 border-b border-gray-800">
         <button
           onClick={handleAddDocument}
-          className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
         >
           + New Document
         </button>
