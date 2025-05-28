@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -18,7 +18,6 @@ import {
   endSaving,
 } from "./editorSlice";
 
-// Required ProseMirror CSS (add to your global CSS if not importing)
 import "../../prosemirror.css";
 
 const Editor = () => {
@@ -27,6 +26,30 @@ const Editor = () => {
   const editorOptions = useSelector(selectEditorOptions);
   const editorRef = useRef(null);
   const editorViewRef = useRef(null);
+
+  // Safe content initialization
+  const getInitialContent = useCallback(() => {
+    return activeDocument?.content?.trim() || "Start typing...";
+  }, [activeDocument]);
+
+  const handleSave = useCallback(() => {
+    if (!activeDocument || !editorViewRef.current) return;
+
+    try {
+      const content = editorViewRef.current.state.doc.textContent;
+      dispatch(startSaving());
+      dispatch(
+        updateDocument({
+          id: activeDocument.id,
+          content,
+        })
+      );
+      setTimeout(() => dispatch(endSaving()), 500);
+    } catch (error) {
+      console.error("Save error:", error);
+      dispatch(endSaving());
+    }
+  }, [activeDocument, dispatch]);
 
   // Initialize ProseMirror editor
   useEffect(() => {
@@ -37,33 +60,37 @@ const Editor = () => {
       marks: basicSchema.spec.marks,
     });
 
-    // Create initial document content safely
-    const initialContent = activeDocument?.content || "";
-    const doc = mySchema.node("doc", null, [
-      mySchema.node("paragraph", null, mySchema.text(initialContent)),
-    ]);
+    // Create initial document with fallback content
+    const doc = mySchema.node(
+      "doc",
+      null,
+      mySchema.node("paragraph", null, mySchema.text(getInitialContent()))
+    );
 
     const initialState = EditorState.create({
-        schema: mySchema,
-        doc,
-        plugins: [
-          history(),
-          keymap(baseKeymap),
-          keymap({
-            "Mod-s": () => {
-              handleSave();
-              return true; // Prevent default save behavior
-            },
-          }),
-        ],
-      });
-      
+      schema: mySchema,
+      doc,
+      plugins: [
+        history(),
+        keymap(baseKeymap),
+        keymap({
+          "Mod-s": () => {
+            handleSave();
+            return true;
+          },
+        }),
+      ],
+    });
 
     editorViewRef.current = new EditorView(editorRef.current, {
       state: initialState,
-      dispatchTransaction(transaction) {
-        const newState = editorViewRef.current.state.apply(transaction);
-        editorViewRef.current.updateState(newState);
+      dispatchTransaction: (transaction) => {
+        try {
+          const newState = editorViewRef.current.state.apply(transaction);
+          editorViewRef.current.updateState(newState);
+        } catch (error) {
+          console.error("Transaction error:", error);
+        }
       },
       attributes: {
         class: "ProseMirror h-full p-4 outline-none",
@@ -72,54 +99,49 @@ const Editor = () => {
     });
 
     dispatch(setEditorReady(true));
+
     return () => {
       if (editorViewRef.current) {
         editorViewRef.current.destroy();
+        editorViewRef.current = null;
       }
       dispatch(setEditorReady(false));
     };
-  }, [dispatch]);
+  }, [dispatch, getInitialContent, handleSave]);
 
-  // Update editor content when active document changes
+  // Update editor content safely when active document changes
   useEffect(() => {
     if (!activeDocument || !editorViewRef.current) return;
 
-    const { state } = editorViewRef.current;
-    const doc = state.schema.node("doc", null, [
-      state.schema.node("paragraph", null, [
-        state.schema.text(activeDocument.content || "Start typing..."),
-      ]),
-    ]);
+    try {
+      const { state } = editorViewRef.current;
+      const currentContent = state.doc.textContent;
+      const newContent = activeDocument.content?.trim() || "Start typing...";
 
-    editorViewRef.current.updateState(
-      EditorState.create({
-        doc,
-        schema: state.schema,
-        plugins: state.plugins,
-      })
-    );
+      // Only update if content actually changed
+      if (currentContent !== newContent) {
+        const doc = state.schema.node("doc", null, [
+          state.schema.node("paragraph", null, state.schema.text(newContent)),
+        ]);
+
+        const tr = state.tr.replaceWith(
+          0,
+          state.doc.content.size,
+          doc.content
+        );
+        editorViewRef.current.dispatch(tr);
+      }
+    } catch (error) {
+      console.error("Content update error:", error);
+    }
   }, [activeDocument]);
-
-  const handleSave = () => {
-    if (!activeDocument || !editorViewRef.current) return;
-
-    const content = editorViewRef.current.state.doc.textContent;
-    dispatch(startSaving());
-    dispatch(
-      updateDocument({
-        id: activeDocument.id,
-        content,
-      })
-    );
-    setTimeout(() => dispatch(endSaving()), 500);
-  };
 
   // Save on unmount
   useEffect(() => {
     return () => {
       handleSave();
     };
-  }, []);
+  }, [handleSave]);
 
   return (
     <div className="h-full dark:bg-gray-900 dark:text-white">
