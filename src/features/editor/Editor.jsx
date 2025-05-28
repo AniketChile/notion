@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Schema, DOMParser } from "prosemirror-model";
+import { Schema } from "prosemirror-model";
 import { schema as basicSchema } from "prosemirror-schema-basic";
 import { history } from "prosemirror-history";
 import { keymap } from "prosemirror-keymap";
@@ -26,8 +26,16 @@ const Editor = () => {
   const editorOptions = useSelector(selectEditorOptions);
   const editorRef = useRef(null);
   const editorViewRef = useRef(null);
+  const saveTimeoutRef = useRef(null);
 
-  // Safe content initialization
+  // Initialize schema
+  const mySchema = useRef(
+    new Schema({
+      nodes: basicSchema.spec.nodes,
+      marks: basicSchema.spec.marks,
+    })
+  ).current;
+
   const getInitialContent = useCallback(() => {
     return activeDocument?.content?.trim() || "Start typing...";
   }, [activeDocument]);
@@ -36,12 +44,15 @@ const Editor = () => {
     if (!activeDocument || !editorViewRef.current) return;
 
     try {
-      const content = editorViewRef.current.state.doc.textContent;
+      // Get JSON from the editor state (not just textContent)
+      const json = editorViewRef.current.state.doc.toJSON();
+      const contentString = JSON.stringify(json);
+
       dispatch(startSaving());
       dispatch(
         updateDocument({
           id: activeDocument.id,
-          content,
+          content: contentString,
         })
       );
       setTimeout(() => dispatch(endSaving()), 500);
@@ -55,17 +66,22 @@ const Editor = () => {
   useEffect(() => {
     if (!editorRef.current) return;
 
-    const mySchema = new Schema({
-      nodes: basicSchema.spec.nodes,
-      marks: basicSchema.spec.marks,
-    });
-
-    // Create initial document with fallback content
-    const doc = mySchema.node(
-      "doc",
-      null,
-      mySchema.node("paragraph", null, mySchema.text(getInitialContent()))
-    );
+    // Parse initial content from JSON or fallback
+    let doc;
+    try {
+      if (activeDocument?.content) {
+        const parsed = JSON.parse(activeDocument.content);
+        doc = mySchema.nodeFromJSON(parsed);
+      } else {
+        doc = mySchema.node("doc", null, [
+          mySchema.node("paragraph", null, mySchema.text("Start typing...")),
+        ]);
+      }
+    } catch {
+      doc = mySchema.node("doc", null, [
+        mySchema.node("paragraph", null, mySchema.text("Start typing...")),
+      ]);
+    }
 
     const initialState = EditorState.create({
       schema: mySchema,
@@ -88,6 +104,11 @@ const Editor = () => {
         try {
           const newState = editorViewRef.current.state.apply(transaction);
           editorViewRef.current.updateState(newState);
+          // Optionally debounce save on each transaction
+          if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+          saveTimeoutRef.current = setTimeout(() => {
+            handleSave();
+          }, 1000);
         } catch (error) {
           console.error("Transaction error:", error);
         }
@@ -105,36 +126,39 @@ const Editor = () => {
         editorViewRef.current.destroy();
         editorViewRef.current = null;
       }
+      if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
       dispatch(setEditorReady(false));
     };
-  }, [dispatch, getInitialContent, handleSave]);
+  }, [activeDocument, dispatch, handleSave, mySchema]);
 
-  // Update editor content safely when active document changes
+  // Update editor content safely when active document changes (only if different)
   useEffect(() => {
     if (!activeDocument || !editorViewRef.current) return;
 
     try {
-      const { state } = editorViewRef.current;
-      const currentContent = state.doc.textContent;
-      const newContent = activeDocument.content?.trim() || "Start typing...";
-
-      // Only update if content actually changed
-      if (currentContent !== newContent) {
-        const doc = state.schema.node("doc", null, [
-          state.schema.node("paragraph", null, state.schema.text(newContent)),
+      const newDoc = (() => {
+        try {
+          if (activeDocument?.content) {
+            return mySchema.nodeFromJSON(JSON.parse(activeDocument.content));
+          }
+        } catch {
+          // ignore parsing error
+        }
+        return mySchema.node("doc", null, [
+          mySchema.node("paragraph", null, mySchema.text("Start typing...")),
         ]);
+      })();
 
-        const tr = state.tr.replaceWith(
-          0,
-          state.doc.content.size,
-          doc.content
-        );
+      const state = editorViewRef.current.state;
+
+      if (!state.doc.eq(newDoc)) {
+        const tr = state.tr.replaceWith(0, state.doc.content.size, newDoc.content);
         editorViewRef.current.dispatch(tr);
       }
     } catch (error) {
       console.error("Content update error:", error);
     }
-  }, [activeDocument]);
+  }, [activeDocument, mySchema]);
 
   // Save on unmount
   useEffect(() => {
@@ -148,7 +172,10 @@ const Editor = () => {
       <div
         ref={editorRef}
         className="h-full bg-transparent text-white placeholder-gray-400"
-        onBlur={handleSave}
+        // Delay save on blur to avoid race conditions
+        onBlur={() => {
+          setTimeout(() => handleSave(), 200);
+        }}
       />
     </div>
   );

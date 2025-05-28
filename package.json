@@ -27,6 +27,8 @@
     "react-dom": "^19.1.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^6.30.1",
+    "slate": "^0.114.0",
+    "slate-react": "^0.114.2",
     "tailwindcss": "^4.1.7"
   },
   "devDependencies": {

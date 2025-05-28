@@ -16,6 +16,7 @@ const Toolbar = () => {
         updateDocument({
           id: activeDocument.id,
           title: e.target.value,
+          content: activeDocument.content, // preserve current content
         })
       );
     }
@@ -42,4 +43,3 @@ const Toolbar = () => {
 };
 
 export default Toolbar;
-
