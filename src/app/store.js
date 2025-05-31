@@ -1,30 +1,47 @@
-import { configureStore } from '@reduxjs/toolkit';
+import { configureStore, combineReducers } from '@reduxjs/toolkit';
+import { persistStore, persistReducer } from 'redux-persist';
+import storage from 'redux-persist/lib/storage'; // defaults to localStorage for web
+
 import documentsReducer from '../features/documents/documentsSlice';
 import editorReducer from '../features/editor/editorSlice';
 import authReducer from '../features/auth/authSlice';
 
-const persistedState = (() => {
-  try {
-    const serializedState = localStorage.getItem("notion-lite-state");
-    if (!serializedState) return undefined;
-    return JSON.parse(serializedState);
-  } catch (e) {
-    console.warn("Failed to load state", e);
-    return undefined;
-  }
-})();
+// Combine all your reducers
+const rootReducer = combineReducers({
+  documents: documentsReducer,
+  editor: editorReducer,
+  auth: authReducer,
+});
 
+// Redux Persist configuration
+const persistConfig = {
+  key: 'root',
+  storage,
+  whitelist: ['documents'], // <-- persist only the documents slice (add more if needed)
+};
+
+// Create a persisted reducer
+const persistedReducer = persistReducer(persistConfig, rootReducer);
+
+// Configure the store
 export const store = configureStore({
-  reducer: {
-    documents: documentsReducer,
-    editor: editorReducer,
-    auth: authReducer
-  },
-  preloadedState: persistedState,
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false,
+      serializableCheck: {
+        ignoredActions: [
+          'persist/PERSIST',
+          'persist/REHYDRATE',
+          'persist/PAUSE',
+          'persist/FLUSH',
+          'persist/PURGE',
+          'persist/REGISTER',
+        ],
+      },
     }),
 });
+
+// Create the persistor
+export const persistor = persistStore(store);
 
 export default store;

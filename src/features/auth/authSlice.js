@@ -1,11 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { account } from "../../appwriteClient";
+import { ID } from "appwrite";
 
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const session = await account.createSession(email, password);
+      const session = await account.createEmailPasswordSession(email, password);
       const user = await account.get();
       return { user, session };
     } catch (error) {
@@ -18,8 +19,7 @@ export const signupUser = createAsyncThunk(
   "auth/signupUser",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      // Appwrite requires user ID: use random ID or email-based ID
-      const user = await account.create("unique()", email, password);
+      const user = await account.create(ID.unique(), email, password);
       return user;
     } catch (error) {
       return rejectWithValue(error.message);

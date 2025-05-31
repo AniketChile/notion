@@ -14,12 +14,3 @@ root.render(
     </Provider>
   </React.StrictMode>
 );
-
-// Persist Redux state to localStorage
-store.subscribe(() => {
-  const state = store.getState();
-  const dataToPersist = {
-    documents: state.documents,
-  };
-  localStorage.setItem("notion-lite-state", JSON.stringify(dataToPersist));
-});

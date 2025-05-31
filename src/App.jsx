@@ -1,27 +1,27 @@
-// src/App.jsx
-import React, { useEffect } from 'react';
-import { Provider, useDispatch } from 'react-redux';
-import store from './app/store';
-import useLocalStorage from './hooks/useLocalStorage';
-import { fetchCurrentUser } from './features/auth/authSlice';
-import HomePage from './pages/HomePage';
+import React, { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCurrentUser, selectUser } from "./features/auth/authSlice";
+import HomePage from "./pages/HomePage";
+import Login from "./features/auth/Login";
+import Signup from "./features/auth/Signup";
 
-const AppWrapper = () => {
+const App = () => {
   const dispatch = useDispatch();
-
-  useLocalStorage();
+  const user = useSelector(selectUser);
+  const [showSignup, setShowSignup] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchCurrentUser()); // ✅ auto-login if session cookie exists
+    dispatch(fetchCurrentUser());
+    document.documentElement.classList.add("dark");
   }, [dispatch]);
 
-  return <HomePage />;
-};
+  if (user) return <HomePage />;
 
-const App = () => (
-  <Provider store={store}>
-    <AppWrapper />
-  </Provider>
-);
+  return showSignup ? (
+    <Signup onSwitchToLogin={() => setShowSignup(false)} />
+  ) : (
+    <Login />
+  );
+};
 
 export default App;
