@@ -1,50 +1,38 @@
-// src/features/auth/authSlice.js
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { account } from '../../appwrite';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { account } from "../../appwriteClient";
 
-// Async thunks for authentication operations
-export const login = createAsyncThunk(
-  'auth/login',
+export const loginUser = createAsyncThunk(
+  "auth/loginUser",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      await account.createEmailSession(email, password);
-      return await account.get();
+      const session = await account.createSession(email, password);
+      const user = await account.get();
+      return { user, session };
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const register = createAsyncThunk(
-  'auth/register',
-  async ({ email, password, name }, { rejectWithValue }) => {
+export const signupUser = createAsyncThunk(
+  "auth/signupUser",
+  async ({ email, password }, { rejectWithValue }) => {
     try {
-      await account.create('unique()', email, password, name);
-      await account.createEmailSession(email, password);
-      return await account.get();
+      // Appwrite requires user ID: use random ID or email-based ID
+      const user = await account.create("unique()", email, password);
+      return user;
     } catch (error) {
       return rejectWithValue(error.message);
     }
   }
 );
 
-export const logout = createAsyncThunk(
-  'auth/logout',
+export const fetchCurrentUser = createAsyncThunk(
+  "auth/fetchCurrentUser",
   async (_, { rejectWithValue }) => {
     try {
-      await account.deleteSession('current');
-      return null;
-    } catch (error) {
-      return rejectWithValue(error.message);
-    }
-  }
-);
-
-export const getCurrentUser = createAsyncThunk(
-  'auth/getCurrentUser',
-  async (_, { rejectWithValue }) => {
-    try {
-      return await account.get();
+      const user = await account.get();
+      return user;
     } catch (error) {
       return rejectWithValue(error.message);
     }
@@ -52,94 +40,66 @@ export const getCurrentUser = createAsyncThunk(
 );
 
 const authSlice = createSlice({
-  name: 'auth',
+  name: "auth",
   initialState: {
     user: null,
-    status: 'idle', // 'idle' | 'loading' | 'succeeded' | 'failed'
+    session: null,
+    loading: false,
     error: null,
-    isAuthenticated: false
   },
   reducers: {
-    clearError: (state) => {
+    logout(state) {
+      state.user = null;
+      state.session = null;
       state.error = null;
     },
-    resetAuthState: (state) => {
-      state.user = null;
-      state.status = 'idle';
-      state.error = null;
-      state.isAuthenticated = false;
-    }
   },
   extraReducers: (builder) => {
     builder
-      // Login cases
-      .addCase(login.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(login.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.user = action.payload;
-        state.isAuthenticated = true;
+      .addCase(loginUser.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(login.rejected, (state, action) => {
-        state.status = 'failed';
+      .addCase(loginUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload.user;
+        state.session = action.payload.session;
+      })
+      .addCase(loginUser.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
-      
-      // Registration cases
-      .addCase(register.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(register.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.user = action.payload;
-        state.isAuthenticated = true;
+      .addCase(signupUser.pending, (state) => {
+        state.loading = true;
         state.error = null;
       })
-      .addCase(register.rejected, (state, action) => {
-        state.status = 'failed';
+      .addCase(signupUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(signupUser.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       })
-      
-      // Logout cases
-      .addCase(logout.pending, (state) => {
-        state.status = 'loading';
+      .addCase(fetchCurrentUser.pending, (state) => {
+        state.loading = true;
+        state.error = null;
       })
-      .addCase(logout.fulfilled, (state) => {
-        state.status = 'idle';
+      .addCase(fetchCurrentUser.fulfilled, (state, action) => {
+        state.loading = false;
+        state.user = action.payload;
+      })
+      .addCase(fetchCurrentUser.rejected, (state, action) => {
+        state.loading = false;
         state.user = null;
-        state.isAuthenticated = false;
-        state.error = null;
-      })
-      .addCase(logout.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-      })
-      
-      // Get current user cases
-      .addCase(getCurrentUser.pending, (state) => {
-        state.status = 'loading';
-      })
-      .addCase(getCurrentUser.fulfilled, (state, action) => {
-        state.status = 'succeeded';
-        state.user = action.payload;
-        state.isAuthenticated = !!action.payload;
-        state.error = null;
-      })
-      .addCase(getCurrentUser.rejected, (state, action) => {
-        state.status = 'failed';
-        state.error = action.payload;
-        state.isAuthenticated = false;
       });
-  }
+  },
 });
 
-export const { clearError, resetAuthState } = authSlice.actions;
+export const { logout } = authSlice.actions;
 
-export const selectCurrentUser = (state) => state.auth.user;
-export const selectIsAuthenticated = (state) => state.auth.isAuthenticated;
-export const selectAuthStatus = (state) => state.auth.status;
+export const selectUser = (state) => state.auth.user;
+export const selectAuthLoading = (state) => state.auth.loading;
 export const selectAuthError = (state) => state.auth.error;
 
 export default authSlice.reducer;

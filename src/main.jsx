@@ -6,6 +6,7 @@ import { store } from "./app/store";
 import "./index.css";
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
+
 root.render(
   <React.StrictMode>
     <Provider store={store}>
@@ -13,3 +14,12 @@ root.render(
     </Provider>
   </React.StrictMode>
 );
+
+// Persist Redux state to localStorage
+store.subscribe(() => {
+  const state = store.getState();
+  const dataToPersist = {
+    documents: state.documents,
+  };
+  localStorage.setItem("notion-lite-state", JSON.stringify(dataToPersist));
+});

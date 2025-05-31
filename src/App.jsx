@@ -1,17 +1,27 @@
-import React from 'react';
-import { Provider } from 'react-redux';
+// src/App.jsx
+import React, { useEffect } from 'react';
+import { Provider, useDispatch } from 'react-redux';
 import store from './app/store';
 import useLocalStorage from './hooks/useLocalStorage';
+import { fetchCurrentUser } from './features/auth/authSlice';
 import HomePage from './pages/HomePage';
 
-const App = () => {
-  useLocalStorage(); // Initialize localStorage persistence
+const AppWrapper = () => {
+  const dispatch = useDispatch();
 
-  return (
-    <Provider store={store}>
-      <HomePage />
-    </Provider>
-  );
+  useLocalStorage();
+
+  useEffect(() => {
+    dispatch(fetchCurrentUser()); // ✅ auto-login if session cookie exists
+  }, [dispatch]);
+
+  return <HomePage />;
 };
+
+const App = () => (
+  <Provider store={store}>
+    <AppWrapper />
+  </Provider>
+);
 
 export default App;

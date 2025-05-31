@@ -1,17 +1,16 @@
+// src/pages/HomePage.jsx
 import React from "react";
-import Sidebar from "../components/Sidebar";
+import Header from "../components/Header";
 import Editor from "../features/editor/Editor";
-import Toolbar from "../components/Toolbar";
+import Sidebar from "../components/Sidebar";
 
 const HomePage = () => {
   return (
-    <div className="flex h-screen bg-white">
+    <div className="flex h-screen">
       <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Toolbar />
-        <div className="flex-1 overflow-auto">
-          <Editor />
-        </div>
+      <div className="flex flex-col flex-grow">
+        <Header />
+        <Editor />
       </div>
     </div>
   );

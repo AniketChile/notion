@@ -1,41 +1,26 @@
-import React from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { addDocument, setActiveDocument } from "../features/documents/documentsSlice";
-import DocumentItem from "./DocumentItem";
+import { useSelector } from "react-redux";
+import { selectUser } from "../features/auth/authSlice";
+import { selectDocuments } from "../features/documents/documentsSlice";
 
 const Sidebar = () => {
-  const dispatch = useDispatch();
-  const documents = useSelector((state) => state.documents.documents);
-  const activeDocumentId = useSelector((state) => state.documents.activeDocumentId);
+  const user = useSelector(selectUser);
+  const documents = useSelector(selectDocuments);
 
-  const handleAddDocument = () => {
-    dispatch(addDocument());
-  };
-
-  const handleSelectDocument = (id) => {
-    dispatch(setActiveDocument(id));
-  };
+  if (!user) {
+    return <div className="p-4 text-gray-400">Please login to view your documents.</div>;
+  }
 
   return (
-    <div className="w-64 h-screen bg-gray-900 border-r border-gray-800 flex flex-col">
-      <div className="p-4 border-b border-gray-800">
-        <button
-          onClick={handleAddDocument}
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
-        >
-          + New Document
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto">
-        {documents.map((doc) => (
-          <DocumentItem
-            key={doc.id}
-            document={doc}
-            isActive={doc.id === activeDocumentId}
-            onSelect={handleSelectDocument}
-          />
+    <div className="w-64 bg-gray-900 text-white p-4">
+      <p className="mb-4">Welcome, {user.email}</p>
+      <button className="btn mb-2">+ New Document</button>
+      <ul>
+        {documents?.map((doc) => (
+          <li key={doc.id} className="hover:bg-gray-700 p-2 rounded">
+            {doc.title}
+          </li>
         ))}
-      </div>
+      </ul>
     </div>
   );
 };

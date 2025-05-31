@@ -1,8 +1,14 @@
+// src/components/Toolbar.jsx
 import React from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { selectIsSaving, selectLastSaved } from "../features/editor/editorSlice";
-import { updateDocument } from "../features/documents/documentsSlice";
-import { selectActiveDocument } from "../features/documents/documentsSlice";
+import {
+  selectIsSaving,
+  selectLastSaved,
+} from "../features/editor/editorSlice";
+import {
+  selectActiveDocument,
+  saveDocumentWithStatus,
+} from "../features/documents/documentsSlice";
 
 const Toolbar = () => {
   const dispatch = useDispatch();
@@ -13,7 +19,7 @@ const Toolbar = () => {
   const handleTitleChange = (e) => {
     if (activeDocument) {
       dispatch(
-        updateDocument({
+        saveDocumentWithStatus({
           id: activeDocument.id,
           title: e.target.value,
           content: activeDocument.content, // preserve current content
