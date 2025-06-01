@@ -2,10 +2,10 @@ import React from "react";
 import LogoutButton from "../features/auth/LogoutButton";
 
 const Header = () => (
-  <div className="flex justify-between items-center p-4 bg-gray-800 text-white">
-    <h1 className="text-xl font-bold">Notion Lite</h1>
+  <header className="w-full flex items-center justify-between px-4 py-3 md:px-8 bg-gray-800 text-white border-b border-gray-700">
+    <h1 className="text-lg md:text-xl font-bold">Notion Lite</h1>
     <LogoutButton />
-  </div>
+  </header>
 );
 
 export default Header;

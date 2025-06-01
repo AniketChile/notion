@@ -27,10 +27,15 @@ const Sidebar = () => {
   }
 
   return (
-    <div className="w-64 bg-gray-900 text-white p-4">
-      <p className="mb-4">Welcome, {user.email || "User"}</p>
-      <button onClick={handleNewDocument} className="btn mb-2 w-full bg-blue-700 text-white py-2 rounded">+ New Document</button>
-      <div>
+    <nav className="w-full md:w-64 bg-gray-900 text-white p-4 md:p-6 rounded md:rounded-none">
+      <p className="mb-4 truncate">Welcome, {user.email || "User"}</p>
+      <button
+        onClick={handleNewDocument}
+        className="mb-4 w-full px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-800 transition"
+      >
+        + New Document
+      </button>
+      <div className="space-y-1">
         {documents.map((doc) => (
           <DocumentItem
             key={doc.id}
@@ -40,7 +45,7 @@ const Sidebar = () => {
           />
         ))}
       </div>
-    </div>
+    </nav>
   );
 };
 

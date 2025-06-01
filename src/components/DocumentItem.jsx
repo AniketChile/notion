@@ -12,8 +12,8 @@ const DocumentItem = ({ document, isActive, onSelect }) => {
 
   return (
     <div
-      className={`p-3 cursor-pointer flex justify-between items-center text-white transition ${
-        isActive ? "bg-gray-700" : "hover:bg-gray-800"
+      className={`p-2 rounded cursor-pointer flex justify-between items-center transition ${
+        isActive ? "bg-blue-900" : "hover:bg-gray-800"
       }`}
       onClick={() => onSelect(document.id)}
     >
