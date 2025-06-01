@@ -71,6 +71,8 @@ const Login = () => {
         >
           Sign up
         </button>
+        <h3 className="mt-4">Email: one@one.com</h3>
+        <h3 className="mt-4">Password: 12345678</h3>
       </p>
     </form>
   );
