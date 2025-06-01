@@ -1,12 +1,48 @@
-# React + Vite
+# 📝 NotionLite
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A minimalist Notion clone built with **React**, **Redux Toolkit**, **TailwindCSS**, and **Appwrite**, featuring auto-save, responsive UI, and persistent document storage using `localStorage`.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🚀 Live Demo
 
-## Expanding the ESLint configuration
+🌐 [View on Vercel](https://notionlite.vercel.app)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+---
+
+## 📸 Preview
+![image](https://github.com/user-attachments/assets/59ff5072-eda3-4b93-9c51-85c48acb4de4)
+![image](https://github.com/user-attachments/assets/6e190545-bc40-4ac5-a29f-6434da063a19)
+![image](https://github.com/user-attachments/assets/d7661aba-d092-4bfe-b674-74902b1ac151)
+![image](https://github.com/user-attachments/assets/75609b23-c026-455a-befa-75659effc6bd)
+
+
+---
+
+## ✨ Features
+
+- 🧠 Simple text editor for notes and documents
+- 🔐 User authentication (signup, login, logout)
+- 📄 Create, edit, and delete documents
+- 💾 Auto-save documents with `localStorage` persistence
+- 📱 Mobile-friendly responsive layout
+- ⚡ Fast and lightweight with a clean UI
+
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend:** React, Redux Toolkit, TailwindCSS
+- **Backend/Auth:** Appwrite
+- **Storage:** `localStorage`
+- **Deployment:** Vercel
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/yourusername/notionlite.git
+cd notionlite
+npm install
+npm start
